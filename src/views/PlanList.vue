@@ -2,13 +2,17 @@
 import { useRouter } from 'vue-router'
 import { useTravelStore } from '../stores/travel'
 import { formatDate, formatMoney } from '../utils/format'
-import { planTotalSpend, planPackingRate } from '../services/selectors'
+import { planTotalSpend, planPackingRate, planNeedsSummary } from '../services/selectors'
 
 const store = useTravelStore()
 const router = useRouter()
 
 function tripTypeClass(type) {
   return { 出国: 'tag-red', 长途: 'tag-orange', 出差: 'tag-blue' }[type] || 'tag-green'
+}
+
+function goToSummary(plan) {
+  router.push({ path: `/plans/${plan.id}`, query: { tab: 'summary' } })
 }
 
 function onDelete(plan) {
@@ -43,6 +47,16 @@ function onDelete(plan) {
           <div class="plan-meta">
             <span>{{ plan.memberCount }} 人 · {{ plan.transport }}</span>
           </div>
+          <button
+            v-if="planNeedsSummary(plan)"
+            type="button"
+            class="summary-nudge"
+            title="该计划已结束，点击补写出行总结"
+            @click.stop="goToSummary(plan)"
+          >
+            <span class="summary-nudge-dot"></span>
+            已结束，待补写总结 ›
+          </button>
           <div class="plan-stats">
             <div class="plan-stat">
               <span class="text-muted">花费</span>
@@ -139,6 +153,47 @@ function onDelete(plan) {
   font-size: 13px;
   color: var(--text-secondary);
   margin-top: 4px;
+}
+
+.summary-nudge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 7px 10px;
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius-sm);
+  background: var(--warning-light);
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.summary-nudge:hover {
+  background: #fef3c7;
+  border-color: var(--warning);
+}
+
+.summary-nudge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warning);
+  flex-shrink: 0;
+  animation: nudge-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes nudge-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 .plan-stats {

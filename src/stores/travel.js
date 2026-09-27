@@ -4,6 +4,7 @@ import { generateLuggageTemplate, getDestinationType } from '../services/luggage
 import { generateDefaultTodos } from '../services/todo'
 import { computeAchievements, TOTAL_ACHIEVEMENTS } from '../services/achievements'
 import { computeDashboardStats, computeMemberLeaderboard } from '../services/stats'
+import { planNeedsSummary } from '../services/selectors'
 import { daysBetween } from '../utils/format'
 import { uid } from '../utils/id'
 
@@ -25,6 +26,8 @@ export const useTravelStore = defineStore('travel', {
     dashboardStats: (state) => computeDashboardStats(state.plans),
     leaderboard: (state) => computeMemberLeaderboard(state.plans),
     planById: (state) => (id) => state.plans.find((p) => p.id === id),
+    // 已结束但未写总结的计划（列表与看板共用，写完总结后响应式消失）
+    plansNeedingSummary: (state) => state.plans.filter((p) => planNeedsSummary(p)),
   },
 
   actions: {

@@ -20,6 +20,16 @@ const form = reactive({
 const fileInput = ref(null)
 const saved = ref(false)
 
+// 已写总结的判定与列表/看板提醒保持一致：有评分或任意一段文字即可
+function hasContent() {
+  return Boolean(
+    form.rating ||
+      form.highlights.trim() ||
+      form.regrets.trim() ||
+      form.suggestions.trim()
+  )
+}
+
 function onPhoto(event) {
   const file = event.target.files[0]
   if (!file) return
@@ -36,7 +46,7 @@ function removePhoto(index) {
 }
 
 function save() {
-  if (!form.rating) {
+  if (!hasContent()) {
     saved.value = false
     return
   }
@@ -89,7 +99,7 @@ function save() {
     <div class="flex gap-8">
       <button type="button" class="btn btn-primary" @click="save">保存总结</button>
       <span v-if="saved" class="text-success">已保存</span>
-      <span v-if="!form.rating" class="text-warning">请先选择评分</span>
+      <span v-if="!hasContent()" class="text-warning">评分或总结文字至少填写一项</span>
     </div>
   </div>
 </template>
