@@ -48,3 +48,30 @@ export function planTodosAllDone(plan) {
   const todos = plan.todos || []
   return todos.length > 0 && todos.every((t) => t.done)
 }
+
+// 判断计划是否已结束（结束日期早于今天）
+export function isPlanEnded(plan) {
+  if (!plan.endDate) return false
+  const now = new Date()
+  const mm = String(now.getMonth() + 1).padStart(2, '0')
+  const dd = String(now.getDate()).padStart(2, '0')
+  return plan.endDate < `${now.getFullYear()}-${mm}-${dd}`
+}
+
+// 判断出行总结是否已写（只填评分或只填文字都算已写）
+export function hasSummary(plan) {
+  const s = plan.summary
+  if (!s) return false
+  const hasText = [s.highlights, s.regrets, s.suggestions].some((t) => t && t.trim())
+  return Boolean(s.rating) || hasText
+}
+
+// 判断计划是否需要补写总结（已结束且总结未写）
+export function needsSummary(plan) {
+  return isPlanEnded(plan) && !hasSummary(plan)
+}
+
+// 筛选出已结束但未写总结的计划
+export function plansPendingSummary(plans) {
+  return (plans || []).filter((p) => needsSummary(p))
+}

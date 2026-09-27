@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router'
 import { useTravelStore } from '../stores/travel'
 import { formatDate, formatMoney } from '../utils/format'
-import { planTotalSpend, planPackingRate } from '../services/selectors'
+import { planTotalSpend, planPackingRate, needsSummary } from '../services/selectors'
 
 const store = useTravelStore()
 const router = useRouter()
@@ -56,6 +56,14 @@ function onDelete(plan) {
               <strong>{{ planPackingRate(plan) }}%</strong>
             </div>
           </div>
+        </div>
+        <div
+          v-if="needsSummary(plan)"
+          class="summary-tip"
+          @click.stop="router.push(`/plans/${plan.id}?tab=summary`)"
+        >
+          <span>出行已结束，总结还未写</span>
+          <span class="summary-tip-link">去补写 →</span>
         </div>
         <div class="plan-actions" @click.stop>
           <button class="btn btn-ghost btn-sm" @click="router.push(`/plans/${plan.id}`)">详情</button>
@@ -169,5 +177,26 @@ function onDelete(plan) {
   display: flex;
   gap: 8px;
   padding: 0 16px 16px;
+}
+
+.summary-tip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 16px 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--warning-light);
+  color: var(--warning);
+  font-size: 13px;
+}
+
+.summary-tip-link {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.summary-tip:hover .summary-tip-link {
+  text-decoration: underline;
 }
 </style>

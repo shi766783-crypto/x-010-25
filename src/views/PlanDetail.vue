@@ -14,7 +14,6 @@ const route = useRoute()
 const router = useRouter()
 
 const plan = computed(() => store.planById(route.params.id))
-const activeTab = ref('overview')
 
 const tabs = [
   { key: 'overview', label: '概览' },
@@ -23,6 +22,9 @@ const tabs = [
   { key: 'record', label: '行程与花费' },
   { key: 'summary', label: '出行总结' },
 ]
+
+// 支持通过 ?tab=summary 等参数直接定位到指定标签页
+const activeTab = ref(tabs.some((t) => t.key === route.query.tab) ? route.query.tab : 'overview')
 
 function onDelete() {
   if (confirm(`确认删除「${plan.value.name}」吗？`)) {

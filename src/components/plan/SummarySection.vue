@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useTravelStore } from '../../stores/travel'
 import StarRating from '../common/StarRating.vue'
 
@@ -20,6 +20,11 @@ const form = reactive({
 const fileInput = ref(null)
 const saved = ref(false)
 
+// 只填评分或只填文字都算已写总结
+const hasContent = computed(
+  () => Boolean(form.rating) || [form.highlights, form.regrets, form.suggestions].some((t) => t.trim())
+)
+
 function onPhoto(event) {
   const file = event.target.files[0]
   if (!file) return
@@ -36,7 +41,7 @@ function removePhoto(index) {
 }
 
 function save() {
-  if (!form.rating) {
+  if (!hasContent.value) {
     saved.value = false
     return
   }
@@ -89,7 +94,7 @@ function save() {
     <div class="flex gap-8">
       <button type="button" class="btn btn-primary" @click="save">保存总结</button>
       <span v-if="saved" class="text-success">已保存</span>
-      <span v-if="!form.rating" class="text-warning">请先选择评分</span>
+      <span v-if="!hasContent" class="text-warning">请填写评分或总结内容</span>
     </div>
   </div>
 </template>

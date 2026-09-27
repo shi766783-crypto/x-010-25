@@ -2,7 +2,8 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTravelStore } from '../stores/travel'
-import { formatMoney } from '../utils/format'
+import { formatDate, formatMoney } from '../utils/format'
+import { plansPendingSummary } from '../services/selectors'
 import BarChart from '../components/charts/BarChart.vue'
 import DonutChart from '../components/charts/DonutChart.vue'
 
@@ -11,6 +12,9 @@ const router = useRouter()
 
 const stats = computed(() => store.dashboardStats)
 const money = (v) => formatMoney(v)
+
+// 已结束但未写总结的计划，提醒用户补写
+const pendingSummaries = computed(() => plansPendingSummary(store.plans))
 
 const statCards = computed(() => [
   { label: '累计出行次数', value: stats.value.totalTrips, suffix: '次' },
@@ -23,6 +27,25 @@ const statCards = computed(() => [
 
 <template>
   <div>
+    <div v-if="pendingSummaries.length" class="card reminder-card">
+      <h3 class="card-title">
+        待补写总结
+        <span class="tag tag-orange">{{ pendingSummaries.length }}</span>
+      </h3>
+      <div
+        v-for="plan in pendingSummaries"
+        :key="plan.id"
+        class="reminder-item"
+        @click="router.push(`/plans/${plan.id}?tab=summary`)"
+      >
+        <div class="reminder-info">
+          <strong>{{ plan.name }}</strong>
+          <span class="text-muted">{{ plan.destination }} · 已于 {{ formatDate(plan.endDate) }} 结束</span>
+        </div>
+        <button class="btn btn-primary btn-sm">去补写总结</button>
+      </div>
+    </div>
+
     <div v-if="store.plans.length" class="stat-grid">
       <div v-for="(card, i) in statCards" :key="i" class="stat-card">
         <span class="stat-label">{{ card.label }}</span>
@@ -57,6 +80,35 @@ const statCards = computed(() => [
 </template>
 
 <style scoped>
+.reminder-card {
+  margin-bottom: 16px;
+  border-left: 4px solid var(--warning);
+}
+
+.reminder-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.reminder-item:hover {
+  background: var(--bg);
+}
+
+.reminder-item + .reminder-item {
+  border-top: 1px solid var(--border);
+}
+
+.reminder-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
